@@ -1,0 +1,104 @@
+@page
+@model R21DataManagementWebsite.Pages.FtpFilesModel
+@{
+    ViewData["Title"] = "FTP Browser";
+}
+
+<div class="container mt-4">
+    <h2>FTP File Browser</h2>
+    <p class="lead">Connect to an FTP server and download files.</p>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @Model.ErrorMessage
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Connection Details
+        </div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="List">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="FtpUsername" class="form-label">Username</label>
+                        <input asp-for="FtpUsername" class="form-control" placeholder="user" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="FtpPassword" class="form-label">Password</label>
+                        <input asp-for="FtpPassword" type="password" class="form-control" placeholder="password" />
+                    </div>
+                </div>
+                <div class="mt-3 text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-hdd-network"></i> Connect & List Files
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.Files != null && Model.Files.Count > 0)
+    {
+        <div class="card">
+            <div class="card-header">
+                Files
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Size</th>
+                                <th>Modified</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var file in Model.Files)
+                            {
+                                <tr>
+                                    <td class="align-middle">@file.Name</td>
+                                    <td class="align-middle">@((file.Size / 1024.0).ToString("F2")) KB</td>
+                                    <td class="align-middle">@file.Modified</td>
+                                    <td class="text-end">
+                                        <form method="post" asp-page-handler="Download" class="d-inline">
+                                            <!-- Hidden fields to pass state back to the server for the download request -->
+                                            <input type="hidden" name="FtpHost" value="@Model.FtpHost" />
+                                            <input type="hidden" name="FtpUsername" value="@Model.FtpUsername" />
+                                            <input type="hidden" name="FtpPassword" value="@Model.FtpPassword" />
+                                            <input type="hidden" name="FileName" value="@file.FullName" />
+                                            
+                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                Download SQLite database
+                                            </button>
+                                        </form>
+
+                                        <form method="post" asp-page-handler="DownloadCsv" class="d-inline ms-1">
+                                            <input type="hidden" name="FtpHost" value="@Model.FtpHost" />
+                                            <input type="hidden" name="FtpUsername" value="@Model.FtpUsername" />
+                                            <input type="hidden" name="FtpPassword" value="@Model.FtpPassword" />
+                                            <input type="hidden" name="FileName" value="@file.FullName" />
+                                            
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                Download CSVs
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else if (Request.Method == "POST" && string.IsNullOrEmpty(Model.ErrorMessage) && (Model.Files == null || Model.Files.Count == 0))
+    {
+         <div class="alert alert-info">No files found or not connected.</div>
+    }
+</div>

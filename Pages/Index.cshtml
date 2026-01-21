@@ -1,0 +1,88 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h2>R21 Test Negative Data Management Website</h2>
+    <p>
+        <a href="~/downloads/r21_neg_data.zip" class="btn btn-primary" download="r21_neg_data.zip">Download Data (ZIP)</a>
+    </p>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-warning" role="alert">
+            @Model.ErrorMessage
+        </div>
+    }
+
+    @if (Model.DeviceCounts != null && Model.DeviceCounts.Count > 0)
+    {
+        <div class="col-md-4 mt-4">
+            <h5>Record Summary</h5>
+            @foreach (var entry in Model.DeviceCounts)
+            {
+                <p class="mb-0"><small><strong>Device ID: @entry.Key:</strong> @entry.Value records</small></p>
+            }
+            <h6 class="mt-2"><strong>Total Records: @Model.TotalRecordCount</strong></h6>
+        </div>
+    }
+
+    <div class="card mt-4">
+
+        <div class="card-body">
+
+            <p class="mb-3 p-2 bg-secondary-subtle rounded">
+
+                <span class="text-black fs-6 fw-bold">Enrollee Data (Top 100):</span> <em class="fst-italic">Only showing the top 100 most recently added/modified records. For the complete dataset, please use the "Download Data (ZIP)" button above.</em>
+
+            </p>
+
+            @if (Model.EnrolleeData != null && Model.EnrolleeData.Rows.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-bordered">
+                        <thead>
+                            <tr>
+                                @foreach (System.Data.DataColumn col in Model.EnrolleeData.Columns)
+                                {
+                                    <th>@col.ColumnName</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (System.Data.DataRow row in Model.EnrolleeData.Rows)
+                            {
+                                <tr>
+                                    @foreach (var item in row.ItemArray)
+                                    {
+                                        if (item is DateTime dt)
+                                        {
+                                            if (dt.TimeOfDay.TotalSeconds == 0)
+                                            {
+                                                <td>@dt.ToString("yyyy-MM-dd")</td>
+                                            }
+                                            else
+                                            {
+                                                <td>@dt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <td>@item</td>
+                                        }
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else if (string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <p>No data found.</p>
+            }
+        </div>
+    </div>
+</div>
